@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>赵语瞳 生日快乐</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        body {
+            background-color: #ffe6f2;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+        /* 画面1：密码弹窗（标题为生日快乐） */
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(255, 105, 180, 0.5);
+            z-index: 100;
+            text-align: center;
+            width: 85%;
+            max-width: 350px;
+        }
+        .popup h2 {
+            color: #ff69b4;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+        .popup input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ffb6c1;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            outline: none;
+            font-size: 16px;
+        }
+        .popup .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .popup button {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 10px;
+            background: #ff69b4;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .popup button:hover {
+            background: #ff1493;
+        }
+        /* 画面2：Hello Kitty 渐变聊天气泡 */
+        .bubble-container {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            padding: 20px;
+        }
+        .bubble {
+            position: absolute;
+            padding: 12px 18px;
+            border-radius: 20px 20px 20px 5px;
+            background: linear-gradient(45deg, #ffc2d1, #ff8fab);
+            color: #333;
+            font-size: 14px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            opacity: 0;
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            transform: scale(0.7) translateY(10px);
+            z-index: 10;
+            max-width: 220px;
+        }
+        /* 气泡 Kitty 装饰 */
+        .bubble::after {
+            content: "🐱";
+            position: absolute;
+            top: -5px;
+            right: 10px;
+            font-size: 12px;
+        }
+        /* 画面3：粒子聚焦合成文字 */
+        .particle-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #ffe6f2;
+            z-index: 200;
+        }
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ff1493;
+            border-radius: 50%;
+            opacity: 0;
+        }
+        .particle-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 42px;
+            font-weight: bold;
+            color: #ff1493;
+            opacity: 0;
+            text-align: center;
+        }
+        #text1 {
+            transform: translate(-50%, -70%);
+        }
+        #text2 {
+            transform: translate(-50%, -30%);
+            font-size: 36px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 画面1：密码弹窗 -->
+    <div class="popup" id="popup">
+        <h2>生日快乐</h2>
+        <input type="password" id="password" placeholder="请输入密码">
+        <div class="btn-group">
+            <button onclick="checkPassword()">确定</button>
+            <button onclick="resetInput()">取消</button>
+        </div>
+    </div>
+
+    <!-- 画面2：祝福气泡容器 -->
+    <div class="bubble-container" id="bubbleContainer"></div>
+
+    <!-- 画面3：粒子合成容器 -->
+    <div class="particle-container" id="particleContainer">
+        <div class="particle-text" id="text1">赵语瞳</div>
+        <div class="particle-text" id="text2">Happy Birthday</div>
+    </div>
+
+    <script>
+        // 30组专属甜系生日祝福
+        const blessings = [
+            "宝宝，生日快乐呀🎂",
+            "做全世界最甜的小寿星～",
+            "曾景桐陪你过超棒的一天🐱",
+            "新岁的每一天都闪闪发光✨",
+            "蛋糕和快乐全都要拥有🍰",
+            "一岁一礼，岁岁都欢喜～",
+            "今天你是我的头号小可爱！",
+            "平安喜乐，万事顺意呀～",
+            "愿所有美好都奔向你而来",
+            "生日快乐，不止在今天～",
+            "赵语瞳今年也不能忘记想我",
+            "新的一岁，要更爱自己哦～",
+            "生日嗨皮，烦恼通通走开！",
+            "被爱包围的宝宝，生日快乐",
+            "每天都要像今天一样开心～",
+            "愿你永远是无忧无虑的小孩",
+            "蛋糕甜甜，好运连连不断～",
+            "新岁新起点，福气装满口袋",
+            "今天是我们的第188天",
+            "岁岁年年，平安康健无忧～",
+            "笑口常开，好运自然来啦～",
+            "想要的一切都能如期而至",
+            "新的一岁，越来越耀眼呀🌟",
+            "快乐围绕，幸福把你拥抱～",
+            "寿星最大，今天全听你的！",
+            "愿你眼里有光，心中有爱～",
+            "生日快乐，幸福溢满心怀～",
+            "永远可爱＂
+            "曾景桐永远陪着你只要你愿意",
+            "赵语瞳，生辰快乐，不止今朝"
+        ];
+
+        // 画面1：密码验证逻辑
+        function checkPassword() {
+            const pwd = document.getElementById("password").value.trim();
+            if (pwd === "0108") {
+                document.getElementById("popup").style.display = "none";
+                setTimeout(showBubbles, 500);
+            } else {
+                alert("密码错误，请重试～");
+                resetInput();
+            }
+        }
+        function resetInput() {
+            document.getElementById("password").value = "";
+        }
+
+        // 画面2：气泡逐个弹出（网格布局避免遮挡）
+        function showBubbles() {
+            const container = document.getElementById("bubbleContainer");
+            container.style.display = "block";
+            const containerW = container.offsetWidth - 40;
+            const containerH = container.offsetHeight - 40;
+            const cols = 4; // 分4列排列
+            const rows = Math.ceil(blessings.length / cols);
+            const bubbleW = containerW / cols - 20;
+            const bubbleH = 60;
+
+            blessings.forEach((bless, index) => {
+                const bubble = document.createElement("div");
+                bubble.className = "bubble";
+                bubble.innerText = bless;
+                // 网格定位，避免重叠
+                const col = index % cols;
+                const row = Math.floor(index / rows);
+                const left = col * (bubbleW + 20) + 20;
+                const top = row * (bubbleH + 15) + 20;
+                bubble.style.left = `${left}px`;
+                bubble.style.top = `${top}px`;
+                container.appendChild(bubble);
+
+                // 逐个显示气泡
+                setTimeout(() => {
+                    bubble.style.opacity = 1;
+                    bubble.style.transform = "scale(1) translateY(0)";
+                    // 所有气泡显示后跳转到粒子画面
+                    if (index === blessings.length - 1) {
+                        setTimeout(() => {
+                            container.style.display = "none";
+                            initParticles();
+                        }, 2000);
+                    }
+                }, index * 250);
+            });
+        }
+
+        // 画面3：粒子聚焦动画
+        function initParticles() {
+            const container = document.getElementById("particleContainer");
+            const text1 = document.getElementById("text1");
+            const text2 = document.getElementById("text2");
+            container.style.display = "block";
+            const particleCount = 150; // 粒子数量
+
+            // 创建粒子
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement("div");
+                particle.className = "particle";
+                // 随机初始位置
+                particle.style.left = `${Math.random() * 100}vw`;
+                particle.style.top = `${Math.random() * 100}vh`;
+                container.appendChild(particle);
+
+                // 粒子向文字聚焦
+                setTimeout(() => {
+                    particle.style.transition = `all 1.5s cubic-bezier(0.2, 0.8, 0.2, 1)`;
+                    particle.style.left = `${50 + (Math.random() - 0.5) * 40}%`;
+                    particle.style.top = `${50 + (Math.random() - 0.5) * 40}%`;
+                    particle.style.opacity = 1;
+                }, i * 10);
+            }
+
+            // 粒子聚焦后显示文字
+            setTimeout(() => {
+                text1.style.transition = "opacity 1s ease";
+                text2.style.transition = "opacity 1s ease 0.3s";
+                text1.style.opacity = 1;
+                text2.style.opacity = 1;
+                // 隐藏粒子
+                const particles = document.querySelectorAll(".particle");
+                particles.forEach(p => {
+                    p.style.opacity = 0;
+                    p.style.transition = "opacity 1s ease";
+                });
+            }, 1800);
+        }
+    </script>
+</body>
+</html>
